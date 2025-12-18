@@ -1,12 +1,12 @@
 package org.example.expert.config;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.example.expert.domain.auth.exception.AuthException;
 import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.user.enums.UserRole;
 import org.springframework.core.MethodParameter;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -34,14 +34,14 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
             NativeWebRequest webRequest,
             @Nullable WebDataBinderFactory binderFactory
     ) {
-        HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
+        // Spring Security의 SecurityContext에서 인증 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // JwtFilter 에서 set 한 userId, email, nickname, userRole 값을 가져옴
-        Long userId = (Long) request.getAttribute("userId");
-        String email = (String) request.getAttribute("email");
-        String nickname = (String) request.getAttribute("nickname");
-        UserRole userRole = UserRole.of((String) request.getAttribute("userRole"));
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthException("인증이 필요합니다.");
+        }
 
-        return new AuthUser(userId, email, nickname, userRole);
+        // JwtAuthenticationFilter에서 설정한 AuthUser 객체 반환
+        return (AuthUser) authentication.getPrincipal();
     }
 }
