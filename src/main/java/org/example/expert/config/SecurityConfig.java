@@ -41,10 +41,6 @@ public class SecurityConfig {
                         // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인)
                         .requestMatchers("/auth/**").permitAll()
 
-                        // 모든 GET 요청은 인증 없이 접근 가능
-                        .requestMatchers(HttpMethod.GET, "/todos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-
                         // 관리자 전용 엔드포인트 (ADMIN 권한 필요)
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
