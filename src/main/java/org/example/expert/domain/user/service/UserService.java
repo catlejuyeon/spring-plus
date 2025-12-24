@@ -1,6 +1,7 @@
 package org.example.expert.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.config.PasswordEncoder;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
@@ -10,6 +11,10 @@ import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -39,6 +44,26 @@ public class UserService {
         }
 
         user.changePassword(passwordEncoder.encode(userChangePasswordRequest.getNewPassword()));
+    }
+
+    /**
+     * 닉네임으로 유저 검색 (정확히 일치)
+     * 성능 측정을 위해 실행 시간 로그 출력
+     */
+    public List<UserResponse> searchUsersByNickname(String nickname) {
+        long startTime = System.currentTimeMillis();
+
+        List<User> users = userRepository.findByNickname(nickname);
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        log.info("닉네임 검색 완료 - 검색어: '{}', 결과: {} 건, 소요 시간: {} ms",
+                nickname, users.size(), duration);
+
+        return users.stream()
+                .map(user -> new UserResponse(user.getId(), user.getEmail(), user.getNickname()))
+                .collect(Collectors.toList());
     }
 
     private static void validateNewPassword(UserChangePasswordRequest userChangePasswordRequest) {
