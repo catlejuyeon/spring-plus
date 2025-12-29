@@ -38,8 +38,9 @@ public class SecurityConfig {
 
                 // URL별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인)
+                        // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인, Health Check)
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/health").permitAll()
 
                         // 관리자 전용 엔드포인트 (ADMIN 권한 필요)
                         .requestMatchers("/admin/**").hasRole("ADMIN")
